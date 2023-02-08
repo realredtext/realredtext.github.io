@@ -1,1 +1,1 @@
-[/index.html](/index.html)
+[page](https://realredtext.github.io)
