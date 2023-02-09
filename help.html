@@ -7,28 +7,28 @@
 <div>
 <h1>How to use cSocketServers and cWebSockets</h1>
 </div>
-<div>
+<div style="border: 2px solid">
 <b>Socket Server</b><br>
 <span>var wss = new cSocketServer("ws://test.ws/", {</span><br>
-<span>	"cookie": function(data) {</span><br>
-<span>		return {</span><br>
-<span>			kind: "cookie",</span><br>
-<span>			cookie: Math.random()</span><br>
-<span>		};</span><br>
-<span>	}</span><br>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;"cookie": function(data) {</span><br>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return {</span><br>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;kind: "cookie",</span><br>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cookie: Math.random()</span><br>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;};</span><br>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
 <span>});</span><br>
 </div>
-<div>
+<div style="border: 2px solid">
 <b>WebSocket</b><br>
 <span>var socket = new cWebSocket("ws://test.ws/", {</span><br>
-<span>	"cookie": function(data) {</span><br>
-<span>		console.log(data.cookie);</span><br>
-<span>	}</span><br>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;"cookie": function(data) {</span><br>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;console.log(data.cookie);</span><br>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;}</span><br>
 <span>});</span><br>
 <span></span><br>
-<span>	socket.send({</span><br>
-<span>		kind: "cookie"</span><br>
-<span>	});</span><br>
+<span>socket.send({</span><br>
+<span>&nbsp;&nbsp;&nbsp;&nbsp;kind: "cookie"</span><br>
+<span>});</span><br>
 <span>//(cookie in logs)</span><br>
 </div>
 <a href="./index.html">Back</a>
