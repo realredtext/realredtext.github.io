@@ -6,11 +6,20 @@ const cSocketServer = function(address, responses) {
 	this.open = true;
 	this.responses = responses;
 	this.clients = {};
-	universalListener.on(address, ({data, socket}) => {
+	
+	universalListener.on("MESSAGE"+address, ({data, socket}) => {
 		var kind = data.kind;
 		if(socket.path !== address) return;
 		if(!top.open) return;
 		if(top.responses[kind]) socket.onmessage(top.responses[kind](data));
+	});
+	universalListener.on("DISCONN"+address, (socket) => {
+		if(!(socket.channel in top.clients)) return;
+		delete top.clients[socket.channel];
+	});
+	universalListener.on("CONN"+address, (socket) => {
+		if(!(socket.channel in top.clients)) top.clients[socket.channel] = socket;
+		
 	});
 	
 	this.broadcast = function(data) {
