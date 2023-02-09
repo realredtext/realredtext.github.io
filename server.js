@@ -16,42 +16,41 @@ const cSocketServer = function(address, responses) {
 	universalListener.on("DISCONN"+address, (socket) => {
 		if(!(socket.channel in top.clients)) return;
 		delete top.clients[socket.channel];
+		if(responses.DISCONN) responses.DISCONN(socket);
 	});
 	universalListener.on("CONN"+address, (socket) => {
 		if(!(socket.channel in top.clients)) top.clients[socket.channel] = socket;
-		
+		if(responses.CONN) responses.CONN(socket);
 	});
 	
 	this.broadcast = function(data) {
 		for(var channel in top.clients) {
+			if(!client.open) return;
+			if(!top.open) return;
 			var client = top.clients[channel];
 			client.onmessage(data);
 		};
 	};
-	
 	this.addClient = function(client) {
 		top.clients[client.channel] = {
 			...client,
 			sdata: {}
-		}
+		};
 	};
-	
 	this.close = function() {
 		top.open = false;
 		top.broadcast({
 			kind: "close"
 		});
+		openServers[address] = false;
 	};
-	
 	this.reopen = function() {
 		top.open = true;
 		top.broadcast({
 			kind: "reopen"
 		});
+		openServers[address] = true;
 	};
 	
-	openServers[address] = {
-		onmessage: top.onmessage,
-		addClient: top.addClient
-	};
+	openServers[address] = true;
 };
