@@ -1,0 +1,36 @@
+<html>
+<head>
+	<title>Help</title>
+	<link rel="shortcut icon" type="image/png" href="./favicon.png">
+</head
+<body>
+<div>
+<h1>How to use cSocketServers and cWebSockets</h1>
+</div>
+<div>
+<b>Socket Server</b><br>
+<span>var wss = new cSocketServer("ws://test.ws/", {</span><br>
+<span>	"cookie": function(data) {</span><br>
+<span>		return {</span><br>
+<span>			kind: "cookie",</span><br>
+<span>			cookie: Math.random()</span><br>
+<span>		};</span><br>
+<span>	}</span><br>
+<span>});</span><br>
+</div>
+<div>
+<b>WebSocket</b><br>
+<span>var socket = new cWebSocket("ws://test.ws/", {</span><br>
+<span>	"cookie": function(data) {</span><br>
+<span>		console.log(data.cookie);</span><br>
+<span>	}</span><br>
+<span>});</span><br>
+<span></span><br>
+<span>	socket.send({</span><br>
+<span>		kind: "cookie"</span><br>
+<span>	});</span><br>
+<span>//(cookie in logs)</span><br>
+</div>
+<a href="./index.html">Back</a>
+</body>
+</html>
