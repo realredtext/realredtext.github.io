@@ -5,6 +5,7 @@ const cWebSocket = function(address, onmessages) {
 	this.path = address;
 	if(!(top.path in openServers)) throw new Error(`No server with address ${address} is open!`);
 	this.channel = (Math.random()*16**14).toString(16).padStart(14, 0);
+	
 	universalListener.emit("CONN"+address, this);
 		
 	this.onmessage = function(data) {
@@ -26,5 +27,10 @@ const cWebSocket = function(address, onmessages) {
 	this.close = function() {
 		top.open = false;
 		universalListener.emit("DISCONN"+address, this);
+	};
+	
+	this.reconnect = function() {
+		top.open = true;
+		universalListener.emit("CONN"+address, this);
 	};
 };
