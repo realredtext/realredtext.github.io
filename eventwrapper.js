@@ -11,6 +11,7 @@ function EventWrapper() {
 	};
 	
 	this.emit = function(kind, data) {
+		kind = kind.toLowerCase();
 		if(!(kind in top.events)) return `No events of type "${kind}"`;
 		
 		top.events[kind].forEach((e) => {e(data)});
@@ -24,6 +25,10 @@ function EventWrapper() {
 		eventsOfType.splice(eventsOfType.indexOf(cb), 1);
 		top.events[type] = eventsOfType;
 	};
+	
+	this.hasEvents = function(type) {
+		return type.toLowerCase in top.events;
+	}
 	
 	return this;
 };
