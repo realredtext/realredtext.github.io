@@ -2,6 +2,7 @@ let openServers = {};
 let universalListener = new EventWrapper();
 
 const cSocketServer = function(address, responses) {
+	if(!new.target) throw new Error("Failed to construct 'cSocketServer': Please use the 'new' operator, this custom object constructor cannot be called as a function")
 	var top = this;
 	this.open = true;
 	if(openServers[address]) throw new Error(`Server of address ${address} is already open!`);
@@ -61,7 +62,7 @@ const cSocketServer = function(address, responses) {
 	});
 	universalListener.on("conn"+address, (socket) => {
 		if(!top.clients[socket.channel]) top.addClient(socket);
-		if(responses.CONN) responses.CONN(socket);
+		if(responses.CONN) responses.CONN(socket); //sdata manip
 	});
 };
 
@@ -86,13 +87,13 @@ const cWebSocket = function(address, onmessages) {
 	
 	this.reconnect = function() {
 		top.open = true;
-		universalListener.emit("svr_com_"+address, top);
+		universalListener.emit("con"+address, top);
 	};
 	
 	this.onmessage = function(data) {
 		if(!top.open) return;
 		var kind = data.kind;
-		if(onmessages[kind]) {onmessages[kind](data)} else {console.log("HOLY PISS")};
+		if(onmessages[kind]) onmessages[kind](data);
 	};
 	
 	universalListener.emit("conn"+address, top);
