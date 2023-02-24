@@ -10,9 +10,9 @@ const cSocketServer = function(address, responses) {
 	
 	this.broadcast = function(data) {
 		for(var channel in top.clients) {
+			var client = top.clients[channel];
 			if(!client.open) return;
 			if(!top.open) return;
-			var client = top.clients[channel];
 			client.onmessage(data);
 		};
 	};
