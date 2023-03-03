@@ -1,0 +1,18 @@
+body {
+	background-color: #555;
+	font-family: sans-serif;
+	color: #FAFAFA;
+}
+
+a {
+	color: #F00;
+}
+a:visited {
+	color: #F0A;
+}
+
+.help {
+	background-color: #000;
+	border: 1px solid #FFF;
+	font-weight: bold;
+}
