@@ -1,11 +1,13 @@
 <html>
-<head>
-	<title>Help</title>
-	<link rel="shortcut icon" type="image/png" href="./favicon.png">
-	<link type="text/css" rel="stylesheet" href="./style.css">
+	<head>
+		<title>Help</title>
+		<link rel="shortcut icon" type="image/png" href="./favicon.png">
+		<link type="text/css" rel="stylesheet" href="./style.css">
+		<script src="./eventwrapper.js"></script>
+		<script src="./client_server.js"></script>
 	</head>
-<body>
-	<h1>How to use cSocketServers and cWebSockets</h1>
+	<body>
+		<h1>How to use cSocketServers and cWebSockets</h1>
 		<b>WebSocket Server</b>
 		<p class="help">var wss = new cSocketServer("ws://test.ws/", {<br>
 		&nbsp;&nbsp;&nbsp;&nbsp;"cookie": function(data) {<br>
@@ -15,7 +17,7 @@
 		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;};<br>
 		&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 		});</p>
-	<hr>
+		<hr>
 		<b>WebSocket Client</b>
 		<p class="help">var socket = new cWebSocket("ws://test.ws/", {<br>
 		&nbsp;&nbsp;&nbsp;&nbsp;"cookie": function(data) {<br>
@@ -27,6 +29,30 @@
 		&nbsp;&nbsp;&nbsp;&nbsp;kind: "cookie"<br>
 		});<br>
 		//(cookie in logs)</p>
-	<a href="./index.html">Back</a>
+		<a href="./index.html">Back</a><br>
+	
+		<button id="send">Send a "cookie" request</button><br>
+		<span id="res">(Will appear here)</span>
+	
+		<script>
+		var wss = new cSocketServer("ws://helppage.com/", {
+			"cookie": function() {
+				return {
+					kind: "cookie",
+					cookie: (Math.floor(Math.random() * 16**14)).toString(16).padStart(14, 0)+"|"+btoa((Math.random()+[])+Math.random()+[])
+				};
+			}
+		});
+		
+		var socket = new cWebSocket("ws://helppage.com/", {
+			"cookie": function(data) {
+				document.querySelector("#res").innerText = data.cookie;
+			}
+		});
+			
+		document.querySelector("#send").onclick = function() {
+			socket.send({kind: "cookie"});
+		};
+	</script>
 </body>
 </html>
