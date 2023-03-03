@@ -16,3 +16,7 @@ a:visited {
 	border: 1px solid #FFF;
 	font-weight: bold;
 }
+
+.to_js {
+	display: block;
+}
