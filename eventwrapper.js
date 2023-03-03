@@ -28,7 +28,15 @@ function EventWrapper() {
 	
 	this.hasEvents = function(type) {
 		return type.toLowerCase in top.events;
-	}
+	};
+	
+	this.emitTo = function(separateWrapper, type, data) {
+		var foreign = window[separateWrapper];
+		if(!foreign instanceof EventWrapper) return `No event wrapper named ${separateWrapper} exists!`;	
+		if(!foreign.hasEvents(type)) return `Wrapper ${separateWrapper} does not have events of kind ${type}!`;
+		
+		foreign.emit(type, data);
+	};
 	
 	return this;
 };
