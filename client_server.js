@@ -2,7 +2,7 @@ let openServers = {};
 let universalListener = new EventWrapper();
 
 const cSocketServer = function(address, responses) {
-	if(!new.target) throw new Error("Failed to construct 'cSocketServer': Please use the 'new' operator, this custom object constructor cannot be called as a function")
+	if(!new.target) throw new Error("Failed to construct 'cSocketServer': Please use the 'new' operator, this custom object constructor cannot be called as a function");
 	var top = this;
 	this.open = true;
 	if(openServers[address]) throw new Error(`Server of address ${address} is already open!`);
@@ -67,12 +67,15 @@ const cSocketServer = function(address, responses) {
 };
 
 const cWebSocket = function(address, onmessages) {
+	if(!new.target) throw new Error("Failed to construct 'cWebSocket': Please use the 'new' operator, this custom object constructor cannot be called as a function");
 	var top = this;
 	this.open = true;
 	this.path = address;
 	if(!openServers[address]) throw new Error(`No server with address ${address} is open!`);
 	this.channel = (Math.random()*16**14).toString(16).padStart(14, 0);
-		
+	this.localData = {}; //mirror to sdata
+
+
 	this.send = function(data) {
 		universalListener.emit("msg"+address, {
 			data: data,
