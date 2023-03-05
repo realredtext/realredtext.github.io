@@ -1,5 +1,5 @@
 body {
-	background-color: #555;
+	background-color: #222;
 	font-family: sans-serif;
 	color: #FAFAFA;
 }
@@ -11,12 +11,12 @@ a:visited {
 	color: #F0A;
 }
 
+.to_js {
+	display: block;
+}
+
 .help {
 	background-color: #000;
 	border: 1px solid #FFF;
 	font-weight: bold;
-}
-
-.to_js {
-	display: block;
 }
