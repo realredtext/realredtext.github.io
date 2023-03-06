@@ -5,6 +5,7 @@ const cSocketServer = function(address, responses) {
 	if(!new.target) throw new Error("Failed to construct 'cSocketServer': Please use the 'new' operator, this custom object constructor cannot be called as a function");
 	var top = this;
 	this.open = true;
+	this.responses = responses;
 	if(openServers[address]) throw new Error(`Server of address ${address} is already open!`);
 	this.clients = {};
 	
@@ -53,16 +54,16 @@ const cSocketServer = function(address, responses) {
 		if(!socket) return;
 		if(socket.path !== address) return;
 		if(!top.open) return;
-		if(responses[kind]) socket.onmessage(responses[kind]({data, socket}));
+		if(top.responses[kind]) socket.onmessage(top.responses[kind]({data, socket}));
 	});
 	universalListener.on("svr_dsc_"+address, (socket) => {
 		if(!top.clients[socket.channel]) return;
 		delete top.clients[socket.channel];
-		if(responses.DISCONN) responses.DISCONN(socket);
+		if(top.responses.DISCONN) top.responses.DISCONN(socket);
 	});
 	universalListener.on("conn"+address, (socket) => {
 		if(!top.clients[socket.channel]) top.addClient(socket);
-		if(responses.CONN) responses.CONN(socket); //sdata manip
+		if(top.responses.CONN) top.responses.CONN(socket); //sdata manip
 	});
 };
 
@@ -70,6 +71,7 @@ const cWebSocket = function(address, onmessages) {
 	if(!new.target) throw new Error("Failed to construct 'cWebSocket': Please use the 'new' operator, this custom object constructor cannot be called as a function");
 	var top = this;
 	this.open = true;
+	this.onmessages = onmessages;
 	this.path = address;
 	if(!openServers[address]) throw new Error(`No server with address ${address} is open!`);
 	this.channel = (Math.random()*16**14).toString(16).padStart(14, 0);
@@ -96,7 +98,7 @@ const cWebSocket = function(address, onmessages) {
 	this.onmessage = function(data) {
 		if(!top.open) return;
 		var kind = data.kind;
-		if(onmessages[kind]) onmessages[kind](data);
+		if(top.onmessages[kind]) top.onmessages[kind](data);
 	};
 	
 	universalListener.emit("conn"+address, top);

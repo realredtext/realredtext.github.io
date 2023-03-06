@@ -13,7 +13,7 @@
 		&nbsp;&nbsp;&nbsp;&nbsp;"cookie": function(data) {<br>
 		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return {<br>
 		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;kind: "cookie",<br>
-		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cookie: Math.random()<br>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cookie: (Math.floor(Math.random() * 16**14)).toString(16).padStart(14, 0)+"|"+btoa((Math.random()+[])+Math.random()+[])<br>
 		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;};<br>
 		&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 		});</p>
@@ -21,7 +21,7 @@
 		<b>WebSocket Client</b>
 		<p class="help">var socket = new cWebSocket("ws://test.ws/", {<br>
 		&nbsp;&nbsp;&nbsp;&nbsp;"cookie": function(data) {<br>
-		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;console.log(data.cookie);<br>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;document.querySelector("#res").innerText = data.cookie;<br>
 		&nbsp;&nbsp;&nbsp;&nbsp;}<br>
 		});<br>
 		<br>
