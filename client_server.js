@@ -19,18 +19,12 @@ const cSocketServer = function(address, responses) {
 	};
 	this.close = function() {
 		top.open = false;
-		top.broadcast({
-			kind: "close"
-		});
 		openServers[address] = {
 			status: false
 		};
 	};
 	this.reopen = function() {
 		top.open = true;
-		top.broadcast({
-			kind: "reopen"
-		});
 		openServers[address] = {
 			status: true
 		};
@@ -41,6 +35,7 @@ const cSocketServer = function(address, responses) {
 	};
 	
 	this.addClient = function(client) {
+		if(!(client instanceof cWebSocket)) return;
 		if(top.clients[client.channel]) return;
 		top.clients[client.channel] = {
 			...client,
@@ -54,7 +49,10 @@ const cSocketServer = function(address, responses) {
 		if(!socket) return;
 		if(socket.path !== address) return;
 		if(!top.open) return;
-		if(top.responses[kind]) socket.onmessage(top.responses[kind]({data, socket}));
+		if(top.responses[kind]) socket.onmessage({
+			...top.responses[kind]({data, socket}),
+			kind: kind
+		});
 	});
 	universalListener.on("svr_dsc_"+address, (socket) => {
 		if(!top.clients[socket.channel]) return;
