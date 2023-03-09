@@ -12,7 +12,7 @@ a:visited {
 }
 
 a:hover {
-	color: #F0F;
+	font-weight: bold;
 }
 
 .to_js {
