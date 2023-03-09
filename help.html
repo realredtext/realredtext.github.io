@@ -10,23 +10,23 @@
 		<h1>How to use cSocketServers and cWebSockets</h1>
 		<b>WebSocket Server</b>
 		<p class="help">var wss = new cSocketServer("ws://test.ws/", {<br>
-		&nbsp;&nbsp;&nbsp;&nbsp;"cookie": function(data) {<br>
-		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return {<br>
-		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;kind: "cookie",<br>
-		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cookie: (Math.floor(Math.random() * 16**14)).toString(16).padStart(14, 0)+"|"+btoa((Math.random()+[])+Math.random()+[])<br>
-		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;};<br>
-		&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+		&emsp;"cookie": function(data) {<br>
+		&emsp;&emsp;return {<br>
+		&emsp;&emsp;&emsp;kind: "cookie",<br>
+		&emsp;&emsp;&emsp;cookie: (Math.floor(Math.random() * 16**14)).toString(16).padStart(14, 0)+"|"+btoa((Math.random()+[])+Math.random()+[])<br>
+		&emsp;&emsp;};<br>
+		&emsp;}<br>
 		});</p>
 		<hr>
 		<b>WebSocket Client</b>
 		<p class="help">var socket = new cWebSocket("ws://test.ws/", {<br>
-		&nbsp;&nbsp;&nbsp;&nbsp;"cookie": function(data) {<br>
-		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;document.querySelector("#res").innerText = data.cookie;<br>
-		&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+		&emsp;"cookie": function(data) {<br>
+		&emsp;&emsp;document.querySelector("#res").innerText = data.cookie;<br>
+		&emsp;}<br>
 		});<br>
 		<br>
 		socket.send({<br>
-		&nbsp;&nbsp;&nbsp;&nbsp;kind: "cookie"<br>
+		&emsp;kind: "cookie"<br>
 		});<br>
 		//(cookie in logs)</p>
 		<a href="./index.html">Back</a><br>
