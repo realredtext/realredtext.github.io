@@ -11,6 +11,10 @@ a:visited {
 	color: #F0A;
 }
 
+a:hover {
+	color: #F0F;
+}
+
 .to_js {
 	display: block;
 }
