@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculator</title>
+	<link type="text/css" rel="stylesheet" href="../style.css">
+	<link type="text/css" rel="stylesheet" href="./cstyle.css">
+</head>
+<body>
+    <h1>Calculator</h1>
+    <div class="calculator_body">
+        <div class="screen">
+            <span id="input"></span><br>
+            <span id="output"></span>
+        </div>
+        <div class="row"><button id="1">1</button><button id="2">2</button><button id="3">3</button><button id="plus">+</button><button id="clear">C</button><button id="ans">A</button></div>
+        <div class="row"><button id="4">4</button><button id="5">5</button><button id="6">6</button><button id="minus">-</button><button id="percent">%</button><button id="square">&#178;</button></div>
+        <div class="row"><button id="7">7</button><button id="8">8</button><button id="9">9</button><button id="division">/</button><button id="exponent">^</button><button id="cbrt">&#8731;</button></div>
+        <div class="row"><button id="sqrt">√</button><button id="0">0</button><button id="enter">⤶</button><button id="multiply">x</button><button id="pi">&pi;</button><button id="e">e</button></div>
+    </div>
+    <script>
+        let input = document.getElementById("input");
+        let output = document.getElementById("output");
+        let ans;
+
+        function parseMathematicalString(string) {
+            return eval(
+                string.replace(/\^/g, "**")
+                .replace(/π/g, Math.PI+"")
+                .replace(/e/g, Math.E+"")
+                .replace(/Ans/g, ans)
+            );
+        };
+
+        function handleButtonPress(id) {
+            switch(id) {
+                case "1":
+                    input.innerText += "1";
+                    output.innerText = "";
+                    return;
+                
+                case "2":
+                    input.innerText += "2";
+                    output.innerText = "";
+                    return;
+
+                case "3":
+                    input.innerText += "3";
+                    output.innerText = "";
+                    return;
+
+                case "4":
+                    input.innerText += "4";
+                    output.innerText = "";
+                    return;
+
+                case "5":
+                    input.innerText += "5";
+                    output.innerText = "";
+                    return;
+
+                case "6":
+                    input.innerText += "6";
+                    output.innerText = "";
+                    return;
+
+                 case "7":
+                    input.innerText += "7";
+                    output.innerText = "";
+                    return;
+
+                case "8":
+                    input.innerText += "8";
+                    output.innerText = "";
+                    return;
+
+                case "9":
+                    input.innerText += "9";
+                    output.innerText = "";
+                    return;
+
+                case "0":
+                    input.innerText += "0";
+                    output.innerText = "";
+                    return;
+
+                case "plus":
+                    if(input.innerText.length) input.innerText += "+";
+                    return;
+
+                case "minus":
+                    if(input.innerText.length) input.innerText += "-";
+                    return;
+
+                 case "division":
+                    if(input.innerText.length) input.innerText += "/";
+                    return;
+
+                case "multiply":
+                    if(input.innerText.length) input.innerText += "*";
+                    return;
+
+                case "enter":
+                    if(input.innerText.length) output.innerText = parseMathematicalString(input.innerText);
+                    ans = Number(output.innerText);
+                    return;
+                
+                case "sqrt":
+                    if(input.innerText.length) output.innerText = Math.sqrt(parseMathematicalString(input.innerText));
+                    ans = Number(output.innerText);
+                    return;
+                
+                case "clear":
+                    input.innerText = "";
+                    output.innerText = "";
+                    return;
+
+                case "percent":
+                    output.innerText = output.innerText = parseMathematicalString(input.innerText)/100;
+                    ans = Number(output.innerText);
+                    return;
+
+                case "exponent":
+                    if(input.innerText.length) input.innerText += "^";
+                    return;
+
+                case "pi":
+                    input.innerText += "π";
+                    output.innerText = "";
+                    return;
+
+                case "e":
+                    input.innerText += "e";
+                    output.innerText = "";
+                    return;
+
+                case "ans":
+                    if(ans) input.innerText += "Ans";
+                    output.innerText = "";
+                    return;
+
+                case "square":
+                    if(input.innerText.length) input.innerText += "^2";
+                    return;
+
+                case "cbrt":
+                    if(input.innerText.length) output.innerText = Math.cbrt(parseMathematicalString(input.innerText));
+                    ans = Number(output.innerText);
+                    return;
+
+                default:
+                    return;
+            };
+        };
+
+        document.addEventListener("click", (x) => {
+    if(x.target instanceof HTMLButtonElement || x.target.parentElement instanceof HTMLButtonElement) handleButtonPress(x.target.id);
+});
+    </script>
+</body>
+</html>
