@@ -1,8 +1,9 @@
 let input = document.getElementById("input");
         let output = document.getElementById("output");
         let ans;
+		let stored;
 
-        function parseMathematicalString(string) {
+        function parseMathematicalString(string) {			
             return eval(
                 string.replace(/\^/g, "**")
                 .replace(/π/g, Math.PI+"")
@@ -64,19 +65,35 @@ let input = document.getElementById("input");
                     return;
 
                 case "plus":
-                    if(input.innerText.length) input.innerText += "+";
+                    if(input.innerText.length) {
+						input.innerText += "+";
+					} else if(ans) {
+						input.innerText += "Ans+";
+					};
                     return;
 
                 case "minus":
-                    if(input.innerText.length) input.innerText += "-";
+                    if(input.innerText.length) {
+						input.innerText += "-";
+					} else if(ans) {
+						input.innerText += "Ans-";
+					};
                     return;
 
                  case "division":
-                    if(input.innerText.length) input.innerText += "/";
+                    if(input.innerText.length) {
+						input.innerText += "/";
+					} else if(ans) {
+						input.innerText += "Ans/";
+					};
                     return;
 
                 case "multiply":
-                    if(input.innerText.length) input.innerText += "*";
+                    if(input.innerText.length) {
+						input.innerText += "*";
+					} else if(ans) {
+						input.innerText += "Ans*";
+					};
                     return;
 
                 case "enter":
@@ -100,7 +117,11 @@ let input = document.getElementById("input");
                     return;
 
                 case "exponent":
-                    if(input.innerText.length) input.innerText += "^";
+                    if(input.innerText.length) {
+						input.innerText += "^";
+					} else if(ans) {
+						input.innerText += "Ans^";
+					};
                     return;
 
                 case "pi":
@@ -119,13 +140,34 @@ let input = document.getElementById("input");
                     return;
 
                 case "square":
-                    if(input.innerText.length) input.innerText += "^2";
+                    if(input.innerText.length) {
+						input.innerText += "^2";
+					} else if(ans) {
+						input.innerText += "Ans^2";
+					};
                     return;
 
                 case "cbrt":
                     if(input.innerText.length) output.innerText = Math.cbrt(parseMathematicalString(input.innerText));
                     ans = Number(output.innerText);
                     return;
+					
+				case "decimal":
+					input.innerText += ".";
+					output.innerText = "";
+					return;
+					
+				case "backspace":
+					if(input.innerText.length) input.innerText = input.innerText.slice(0, input.innerText.length - 1);
+					return;
+					
+				case "sto":
+					stored = parseMathematicalString(input.innerText);
+					return;
+					
+				case "rcl":
+					input.innerText += stored+"";
+					return;
 
                 default:
                     return;

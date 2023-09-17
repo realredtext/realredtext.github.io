@@ -1,7 +1,7 @@
 .calculator_body {
 	border: 12px solid #cecece;
-	background-color: #000000;
 	width: 240px;
+	background-color: #cecece;
 }
 
 .screen {
