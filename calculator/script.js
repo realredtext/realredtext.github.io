@@ -95,7 +95,7 @@ let input = document.getElementById("input");
                     return;
 
                 case "percent":
-                    output.innerText = output.innerText = parseMathematicalString(input.innerText)/100;
+                    if(input.innerText.length) output.innerText = output.innerText = parseMathematicalString(input.innerText)/100;
                     ans = Number(output.innerText);
                     return;
 
