@@ -166,6 +166,12 @@ function handleButtonPress(id) {
 			output.innerText = "";
 			input.innerText = "";
 			return;
+			
+		case "ston":
+			if(input.innerText.length) stored = parseMathematicalString(input.innerText)*-1;
+			output.innerText = "";
+			input.innerText = "";
+			return;
 					
 		case "rcl":
 			if(!stored) return;
