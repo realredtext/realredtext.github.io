@@ -13,6 +13,10 @@ function parseMathematicalString(string) {
 	);
 };
 
+function ruinDegrees(x) { //what kind of mouth breathers think radians are better than degrees
+	return (x * (Math.PI/180))%((180/Math.PI) * 6);
+}
+
 function handleButtonPress(id) {
 	switch(id) {
 		case "1":
@@ -275,6 +279,46 @@ function handleButtonPress(id) {
 			if(!stored) return;
 			output.innerText = "";
 			input.innerText = stored+"";
+			return;
+
+		case "mclr": 
+			stored = undefined;
+			return;
+
+		case "sin":
+			if(input.innerText.length) output.innerText = Math.sin(ruinDegrees(parseMathematicalString(input.innerText)));
+			ans = Number(output.innerText);
+			displayingAnswer = true;
+			return;
+
+		case "cos":
+			if(input.innerText.length) output.innerText = Math.cos(ruinDegrees(parseMathematicalString(input.innerText)));
+			ans = Number(output.innerText);
+			displayingAnswer = true;
+			return;
+
+		case "tan":
+			if(input.innerText.length) output.innerText = Math.tan(ruinDegrees(parseMathematicalString(input.innerText)));
+			ans = Number(output.innerText);
+			displayingAnswer = true;
+			return;
+
+		case "cot":
+			if(input.innerText.length) output.innerText = 1/Math.tan(ruinDegrees(parseMathematicalString(input.innerText)));
+			ans = Number(output.innerText);
+			displayingAnswer = true;
+			return;
+
+		case "sec":
+			if(input.innerText.length) output.innerText = 1/Math.cos(ruinDegrees(parseMathematicalString(input.innerText)));
+			ans = Number(output.innerText);
+			displayingAnswer = true;
+			return;
+
+		case "csc":
+			if(input.innerText.length) output.innerText = 1/Math.sin(ruinDegrees(parseMathematicalString(input.innerText)));
+			ans = Number(output.innerText);
+			displayingAnswer = true;
 			return;
 
 		default:
