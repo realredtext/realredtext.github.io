@@ -2,6 +2,7 @@ let input = document.getElementById("input");
 let output = document.getElementById("output");
 let ans;
 let stored;
+let displayingAnswer = false;
 
 function parseMathematicalString(string) {			
 	return eval(
@@ -15,51 +16,121 @@ function parseMathematicalString(string) {
 function handleButtonPress(id) {
 	switch(id) {
 		case "1":
+			if(displayingAnswer) {
+				input.innerText = "1";
+				displayingAnswer = false;
+				output.innerText = "";
+				return;
+			};
+			displayingAnswer = false;
 			input.innerText += "1";
 			output.innerText = "";
 			return;
 			    
 		case "2":
+			if(displayingAnswer) {
+				input.innerText = "2";
+				displayingAnswer = false;
+				output.innerText = "";
+				return;
+			};
+			displayingAnswer = false;
 			input.innerText += "2";
 			output.innerText = "";
 			return;
 
 		case "3":
+			if(displayingAnswer) {
+				input.innerText = "3";
+				displayingAnswer = false;
+				output.innerText = "";
+				return;
+			};
+			displayingAnswer = false;
 			input.innerText += "3";
 			output.innerText = "";
 			return;
 
 		case "4":
+			if(displayingAnswer) {
+				input.innerText = "4";
+				displayingAnswer = false;
+				output.innerText = "";
+				return;
+			};
+			displayingAnswer = false;
 			input.innerText += "4";
 			output.innerText = "";
 			return;
 
 		case "5":
+			if(displayingAnswer) {
+				input.innerText = "5";
+				displayingAnswer = false;
+				output.innerText = "";
+				return;
+			};
+			displayingAnswer = false;
 			input.innerText += "5";
 			output.innerText = "";
 			return;
 
 		case "6":
+			if(displayingAnswer) {
+				input.innerText = "6";
+				displayingAnswer = false;
+				output.innerText = "";
+				return;
+			};
+			displayingAnswer = false;
 			input.innerText += "6";
 			output.innerText = "";
 			return;
 
 		case "7":
+			if(displayingAnswer) {
+				input.innerText = "7";
+				displayingAnswer = false;
+				output.innerText = "";
+				return;
+			};
+			displayingAnswer = false;
 			input.innerText += "7";
 			output.innerText = "";
 			return;
 
 		case "8":
+			if(displayingAnswer) {
+				input.innerText = "8";
+				displayingAnswer = false;
+				output.innerText = "";
+				return;
+			};
+			displayingAnswer = false;
 			input.innerText += "8";
 			output.innerText = "";
 			return;
 
 		case "9":
+			if(displayingAnswer) {
+				input.innerText = "9";
+				displayingAnswer = false;
+				output.innerText = "";
+				return;
+			};
+			displayingAnswer = false;
 			input.innerText += "9";
 			output.innerText = "";
 			return;
 
-		case "0":
+		case "0": //TODO: prevent octal syntax weirdness
+			if(displayingAnswer) {
+				input.innerText = "0";
+				displayingAnswer = false;
+				output.innerText = "";
+				return;
+			};
+			displayingAnswer = false;
 			input.innerText += "0";
 			output.innerText = "";
 			return;
@@ -67,7 +138,7 @@ function handleButtonPress(id) {
 		case "plus":
 			if(input.innerText.length) {
 				input.innerText += "+";
-			} else if(ans) {
+			} else if(typeof ans === "number") {
 				input.innerText += "Ans+";
 			 };
 			return;
@@ -75,7 +146,7 @@ function handleButtonPress(id) {
 		case "minus":
 			if(input.innerText.length) {
 				input.innerText += "-";
-			} else if(ans) {
+			} else if(typeof ans === "number") {
 				input.innerText += "Ans-";
 			};
 			return;
@@ -83,7 +154,7 @@ function handleButtonPress(id) {
 		case "division":
 			if(input.innerText.length) {
 				input.innerText += "/";
-			} else if(ans) {
+			} else if(typeof ans === "number") {
 				input.innerText += "Ans/";
 			};
 			return;
@@ -91,7 +162,7 @@ function handleButtonPress(id) {
 		case "multiply":
 			if(input.innerText.length) {
 				input.innerText += "*";
-			} else if(ans) {
+			} else if(typeof ans === "number") {
 				input.innerText += "Ans*";
 			};
 			return;
@@ -99,21 +170,25 @@ function handleButtonPress(id) {
 		case "enter":
 			if(input.innerText.length) output.innerText = parseMathematicalString(input.innerText);
 			ans = Number(output.innerText);
+			displayingAnswer = true;
 			return;
                 
 		case "sqrt":
 			if(input.innerText.length) output.innerText = Math.sqrt(parseMathematicalString(input.innerText));
 			ans = Number(output.innerText);
+			displayingAnswer = true;
 			return;
                 
 		case "clear":
 			input.innerText = "";
 			output.innerText = "";
+			displayingAnswer = false;
 			return;
 
 		case "percent":
 			if(input.innerText.length) output.innerText = output.innerText = parseMathematicalString(input.innerText)/100;
 			ans = Number(output.innerText);
+			displayingAnswer = true;
 			return;
 
 		case "exponent":
@@ -125,17 +200,37 @@ function handleButtonPress(id) {
 			return;
 
 		case "pi":
+			if(displayingAnswer) {
+				input.innerText = "π";
+				displayingAnswer = false;
+				output.innerText = "";
+				return;
+			};
+			displayingAnswer = false;
 			input.innerText += "π";
 			output.innerText = "";
-		return;
+			return;
 
 		case "e":
+			if(displayingAnswer) {
+				input.innerText = "e";
+				displayingAnswer = false;
+				output.innerText = "";
+				return;
+			};
+			displayingAnswer = false;
 			input.innerText += "e";
 			output.innerText = "";
 			return;
 
 		case "ans":
-			if(ans) input.innerText += "Ans";
+			if(!ans) return;
+			if(displayingAnswer) {
+				input.innerText = "Ans";
+				displayingAnswer = false;
+				return;
+			}
+			input.innerText += "Ans";
 			output.innerText = "";
 			return;
 
@@ -150,6 +245,7 @@ function handleButtonPress(id) {
 		case "cbrt":
 			if(input.innerText.length) output.innerText = Math.cbrt(parseMathematicalString(input.innerText));
 			ans = Number(output.innerText);
+			displayingAnswer = true;
 			return;
 					
 		case "decimal":
@@ -165,12 +261,14 @@ function handleButtonPress(id) {
 			if(input.innerText.length) stored = parseMathematicalString(input.innerText);
 			output.innerText = "";
 			input.innerText = "";
+			displayingAnswer = false;
 			return;
 			
 		case "ston":
 			if(input.innerText.length) stored = parseMathematicalString(input.innerText)*-1;
 			output.innerText = "";
 			input.innerText = "";
+			displayingAnswer = false;
 			return;
 					
 		case "rcl":

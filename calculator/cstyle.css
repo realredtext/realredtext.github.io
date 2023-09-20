@@ -12,11 +12,12 @@
 }
 
 button {
-	background-color: #eeeeee;
-	color: #333333;
+	background-color: #222222;
+	color: #DDDDDD;
 	width: 40px;
 	height: 40px;
 	font-size: 20px;
+	padding: 0px;
 }
 
 #output {
