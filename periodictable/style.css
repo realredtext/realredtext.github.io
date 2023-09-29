@@ -62,6 +62,6 @@ a:hover {
 	width: 1656px;
 	height: 850px;
 	display: grid;
-	grid-template-columns: 88px 88px 88px 88px 88px 88px 88px 88px 88px 88px 88px 88px 88px 88px 88px 88px 88px 88px;
-	grid-template-rows: 92px 92px 92px 92px 92px 92px 92px 92px 92px;
+	grid-template-columns: 85px 85px 85px 85px 85px 85px 85px 85px 85px 85px 85px 85px 85px 85px 85px 85px 85px 85px;
+	grid-template-rows: 92px 92px 92px 92px 92px 92px 105px 92px 92px;
 }
