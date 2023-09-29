@@ -189,7 +189,7 @@ let backgroundColors = {
 	"hlg": "#FFFF99",
 	"trm": "#777777",
 	"lan": "#FF77FF",
-	"act": "#5B00D0",
+	"act": "#8851CF",
 	"sup": "#FFFFFF"
 }
 
