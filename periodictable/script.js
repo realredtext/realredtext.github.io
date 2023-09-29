@@ -18,7 +18,7 @@ function pushElementCard(elmData) {
 	mass.innerText = elmData[1];
 	core.appendChild(mass);
 	
-	let icon = document.createElement("span");
+	let icon = document.createElement("b");
 	icon.className = "abbr";
 	icon.innerText = elmData[2];
 	core.appendChild(icon);
