@@ -39,7 +39,8 @@ function pushElementCard(elmData) {
 	};
 
 	core.style.gridColumn = `${numberToGroup(elmData[0])} / ${numberToGroup(elmData[0])+1}`;
-	core.style.gridRow = `${elmData[6]} / ${elmData[6]+1}`
+	core.style.gridRow = `${elmData[6]} / ${elmData[6]+1}`;
+	core.style.cursor = "hand";
 	
 	document.querySelector(".table").appendChild(core);
 	
