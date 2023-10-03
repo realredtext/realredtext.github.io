@@ -39,7 +39,9 @@ function pushElementCard(elmData) {
 			num: elmData[0],
 			mass: elmData[1],
 			group: elmData[4],
-			conf: elmData[5]
+			conf: elmData[5],
+			electronegativity: elmData[7],
+			oxidation_states: elmData[8]
 		});
 	};
 
@@ -55,6 +57,8 @@ function pushElementCard(elmData) {
 function updateInfoDisplay(data) {
 	for(var i in data) {
 		document.getElementById("disp_elm"+i).innerText = data[i];
+		document.getElementById("disp_elmelectronegativity").innerText = data.electronegativity ?? "Unknown";
+		document.getElementById("disp_elmoxidation_states").innerText = data.oxidation_states ?? "0";
 		document.getElementById("disp_elmname").innerText = document.getElementById("disp_elmname").innerText.replace("&#9762;", "");
 	};	
 };
