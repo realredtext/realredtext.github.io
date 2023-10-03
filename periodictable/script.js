@@ -1,3 +1,8 @@
+function valueToKey(object, value) {
+	let index = Object.values(object).indexOf(value);
+	return Object.keys(object)[index];
+}
+
 function pushElementCard(elmData) {
 	/*let elmData = [
 		1, 1.008, "H", "Hydrogen", "Nonmetal", "1s1", 1
@@ -56,4 +61,20 @@ function updateInfoDisplay(data) {
 
 for(var i = 0; i < 118; i++) {
 	pushElementCard(elementData[i]);
-}
+};
+
+(()=>{
+	for(var i in backgroundColors) {
+		let color = backgroundColors[i];
+
+		let name = valueToKey(shrinkMap, valueToKey(backgroundColors, color));
+
+		let snippet = document.createElement("b");
+
+		snippet.style.color = color;
+		snippet.innerHTML = name;
+
+		document.getElementById("colors").appendChild(snippet);
+		document.getElementById("colors").appendChild(document.createElement("br"));
+	}
+})()
