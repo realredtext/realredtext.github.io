@@ -1,6 +1,32 @@
 let accentList = [];
+let baseCharacter = "a";
 for(var i = 768; i <= 791; i++) {
-    accentList[i-768] = "a"+String.fromCharCode(i);
+    accentList[i-768] = baseCharacter+String.fromCharCode(i);
+};
+
+function charUpdateError(error) {
+    change_char.style.backgroundColor = "#FF7777";
+    error_disp.innerText = error;
+};
+
+function clearCharError() {
+    change_char.style.backgroundColor = "#FFFFFF";
+    error_disp.innerText = "";
+}
+
+function changeBaseCharacter(char) {
+    if(char.length !== 1) return charUpdateError("Invalid length!");
+    if(!(/[aeiou]/g.test(char))) return charUpdateError("Use only vowels!");
+    baseCharacter = char;
+
+    for(var i = 768; i <= 791; i++) {
+        accentList[i-768] = baseCharacter+String.fromCharCode(i);
+    };
+
+    [...document.querySelectorAll(".accent_card")].forEach(x => {
+        x.innerText = baseCharacter+String.fromCharCode(parseInt(x.id));
+    });
+    clearCharError();
 };
 
 let accentIsCommon = {
@@ -34,6 +60,7 @@ let accentIsCommon = {
 function addAccentCard(content) {
     let card = document.createElement("button");
     card.className = "accent_card";
+    card.id = content[1].charCodeAt(0).toString();
     card.innerText = content; //no html fuckery
 
     let hex = content[1].charCodeAt(0).toString(16);
