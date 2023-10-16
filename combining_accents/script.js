@@ -52,6 +52,10 @@ for(var i of accentList) {
 
 document.addEventListener("click", (data) => {
     if((data.target instanceof HTMLButtonElement) && data.target.className === "accent_card") {
-        copy(data.target.innerText[1]);
+        if(window.copy) {
+            copy(data.target.innerText[1]);
+        } else {
+            alert("Copy from alert:  "+data.target.innerText[1]);
+        }
     }
 });
