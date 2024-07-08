@@ -1,9 +1,10 @@
 /*
 	TODO: ADD MELTING/BOILING POINTS @1 ATM
+	ADD SUBGROUPS
 */
 
 
-let elementData = [ //atomic number, atomic mass, abbr., name, group, electron configuration, electronegativity, oxidation states
+let elementData = [ //atomic number, atomic mass, abbr., name, group, electron configuration, row, electronegativity, oxidation states
 	["1", 1.008, "H", "Hydrogen", "Nonmetal", "1s1", "1", 2.2, "-1 +1"],
 	["2", 4.002, "He", "Helium", "Noble Gas", "1s2", "1", undefined],
 	["3", 7, "Li", "Lithium", "Alkali Metal", "1s2 2s1", "2", 0.98, "+1"],
