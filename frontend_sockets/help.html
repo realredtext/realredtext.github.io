@@ -36,7 +36,8 @@
 	
 		<script>
 		var wss = new cSocketServer("ws://helppage.com/", {
-			"cookie": function() {
+			"cookie": function(data) {
+				console.log(data);
 				return {
 					kind: "cookie",
 					cookie: (Math.floor(Math.random() * 16**14)).toString(16).padStart(14, 0)+"|"+btoa((Math.random()+[])+Math.random()+[])
