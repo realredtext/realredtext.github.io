@@ -1,0 +1,44 @@
+.calculator_body {
+	border: 24px solid #cecece;
+	width: 500px;
+	background-color: #cecece;
+}
+
+.screen {
+	background-color: #a8d1a8;
+	color: #386138;
+	height: 280px;
+	position: relative;
+	font-size: 30px;
+}
+
+button {
+	background-color: #222222;
+	color: #DDDDDD;
+	width: 80px;
+	height: 80px;
+	font-size: 40px;
+	padding: 0px;
+	margin: 1px;
+}
+
+.nonadd {
+	background-color: #992222;
+	color: #DDDDDD;
+	width: 80px;
+	height: 80px;
+	font-size: 40px;
+	padding: 0px;
+	margin: 1px;
+}
+
+#output {
+	position: absolute;
+	right: 0;
+	bottom: 0;
+	text-align: right;
+}
+
+#trig {
+	font-size: 12px;
+}
