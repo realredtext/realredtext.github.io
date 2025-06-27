@@ -1,0 +1,22 @@
+body {
+	background-color: #222;
+	font-family: sans-serif;
+	color: #E0E0E0;
+}
+
+a {
+	color: #F00;
+}
+a:visited {
+	color: #F0A;
+}
+
+a:hover {
+	color: #F0F;
+}
+
+.help {
+	background-color: #000;
+	border: 1px solid #FFF;
+	font-weight: bold;
+}
