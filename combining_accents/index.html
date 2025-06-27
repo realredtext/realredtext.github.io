@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="shortcut icon" type="image/png" href="../favicon.png">
+    <link type="text/css" rel="stylesheet" href="../style.css">
+    <title>Combining Accent List</title>
+    <link type="text/css" rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <h1>Common Combining Accents</h1>
+    <h3>Click a button to copy its combining accent</h3>
+    <a href="https://realredtext.github.io">Back</a><br>
+    <input id="change_char" type="text" maxlength="1" onchange="changeBaseCharacter(change_char.value)" placeholder="Change base char" title="Use only lowercase vowels">
+    <b id="error_disp"></b>
+    <hr>
+    <div id="common">
+        <h3>Common accents</h3>
+    </div>
+    <hr>
+    <div id="rare">
+        <h3>Rare accents</h3>
+    </div>
+    <script src="./script.js"></script>
+</body>
+</html>
