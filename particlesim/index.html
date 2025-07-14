@@ -1,0 +1,780 @@
+<html>
+	<head>
+		<title>Particle Sandbox</title>
+		<style>
+			body {
+				background-color: #333;
+				color: #fff;
+				vertical-align: center;
+				justify-content: center;
+				display: flex;
+				font-family: sans-serif;
+			}
+
+			#partcanvas {
+				border: 2px solid #ff0000;
+			}
+			
+			div.segment {
+				display: block;
+				border: 1px solid #999999;
+				text-align: center;
+				height: 70px;
+				justify-items: center;
+				margin: 3px;
+			}
+
+			p {
+				margin: 3px;
+			}
+
+			.big {
+				display: flex;
+			}
+
+			input[type='text'] {
+				width: 140px;
+			}
+
+		</style>
+	</head>
+	<body>
+		<canvas id="partcanvas" class="big" width="1024px" height="1024px"></canvas>
+		<div id="tools" class="big">
+			<div class="segment">
+				<p>Select Particle</p>
+				<select name="particle" id="addpart"></select>
+			</div>
+			<div class="segment">
+				<p>Toggle decay</p>
+				<input type="checkbox" id="decay">
+			</div>
+			<div class="segment">
+				<br>
+				<button id="none">Clear all particles</button>
+			</div>
+			<div class="segment">
+				<p>Set EM strength</p>
+				<input type="text" id="coulomb">
+			</div>
+			<div class="segment">
+				<p>Initial movement toggle</p>
+				<input type="checkbox" id="randmovement">
+			</div>
+			<div class="segment">
+				<p>Set FPS</p>
+				<input type="text" id="fpsinput">
+			</div>
+		</div>
+		<script>
+			let context = partcanvas.getContext("2d");
+			context.font = "20px serif"; 
+			let selectedParticle = "electron";
+			let fps = 30;
+			let doDecays = false;
+			let c1 = (180/Math.PI); //rad to deg
+			let c2 = (Math.PI/180); //deg to rad
+			context.fillStyle="#000000";
+			context.fillRect(0,0,1024,1024);
+			let genChanceConstant = 4e3;
+			let values = Object.values;
+
+			let forceConstants = {
+				electro: 5e7,
+				strong: 1e9,
+				weak: 1/20
+			}
+
+			function limit(val, ceil=1000) {
+				if(Math.abs(val) > ceil) val = ceil*Math.sign(val);
+
+				return val;
+			};
+
+			function isDegenerate(num) {
+				return num === Infinity || Number.isNaN(num);
+			}
+
+			function forceLaw(one, two, pOne, pTwo, type) {
+				//pOne: {x, y}, pTwo: {x, y}
+				let fConst = forceConstants[type];
+				if(!fConst) return 0;
+
+				let dx = Math.abs(pOne.x - pTwo.x);
+				let dy = Math.abs(pOne.y - pTwo.y);
+
+				let denX = dx**-2;
+				let denY = dy**-2;
+
+				if(isDegenerate(denX)) denX = 0;
+				if(isDegenerate(denY)) denY = 0;
+
+				let xForce = fConst * (one*two) * denX;
+				if(type === "strong") xForce = forceConstants.strong/(denX**1.5);
+
+				let yForce = fConst * (one*two) * denY;
+				if(type === "strong") yForce = forceConstants.strong/(denY**1.5);
+
+				if(Number.isNaN(yForce)) yForce = 0;
+				if(Number.isNaN(xForce)) xForce = 0;
+
+				xForce = limit(xForce);
+				yForce = limit(yForce);
+				
+				return {xForce, yForce};
+			};
+
+			function changeFPS(newVal) {
+				if((typeof newVal) !== "number") return;
+				if(fps < 1) return;
+				if(fps > 60) return;
+				if(Math.floor(fps) !== fps);
+
+				fps = newVal;
+				clearInterval(frameTicker);
+				frameTicker = setInterval(()=>{
+					context.fillStyle = "#000000";
+					context.fillRect(0,0,1024,1024);
+					for(var i in presentParticles) {
+						updateParticle(i);
+					};
+				}, 1e3/newVal)
+			}
+
+			function chargeOf(particle, force) {
+				if(force === "strong") return particle.colorCharge??0;
+				if(force === "electro") return particle.fund.charge;
+				if(force === "weak") return particle.fund.weakIso[particle.chiral]; //particles without T3 but YW cannot feel weak force
+			}
+
+			coulomb.value = forceConstants.electro+"";
+			fpsinput.value = fps; 
+
+			 function obj(mass, weakIsos, weakHypers, charge, symbol, color, decayTime) {
+				//weakHypers [left YW, right YW]
+				//weakIsos [left, right]
+				return {
+					mass,
+					weakIsos,
+					weakHypers,
+					charge,
+					symbol,
+					color,
+					decayTime
+				};
+			};
+
+			function objectMap(obj, cb) {
+				let newObj = {};
+				for(var i in obj) {
+					newObj[i] = cb(i, obj[i]);
+				};
+
+				return newObj;
+			};
+
+			function randomSign() {
+				return Math.sign(Math.random()-0.5);
+			}
+
+			function weightedRandom(...choices) {
+    			let value = Math.random();
+    			let choice = choices[Math.floor(Math.random()*choices.length)];
+
+    			if(value <= choice[0]) return choice;
+
+    			return weightedRandom(...choices);
+			};
+
+			let ywt3 = { //YW of an antifermion is equal to the negative of the fermions YW
+				//part: [[left T3, right T3], [left YW, right YW]]
+				nu: [[0.5, 0], [-1, 0]],
+				cL: [[-0.5, 0], [-1, -2]],
+				pQ: [[0.5, 0], [1/3, 4/3]],  //u, c, t
+				rQ: [[-0.5, 0], [1/3, -2/3]] //d, s, b
+			}
+			
+			let properties = { // [mass (mEv/c^2), [left T3, right T3], [left YW, right YW], charge, label, color, decaytime]
+				electron: obj(0.51099895069, ...ywt3.cL, -1, "e", 0x1111ff, 0),
+				proton: obj(938.27208943, [0.5, 1], [0, 1], 1, "p", 0xff2222, 0),
+				upQuark: obj(2.15, ...ywt3.pQ, 2/3, "u", 0xaaaaaa, 0),
+				downQuark: obj(4.75, ...ywt3.rQ, -1/3, "d", 0xaaaaaa, 0),
+				charmQuark: obj(1270, ...ywt3.pQ, 2/3, "c", 0xff99ff, 20),
+				strangeQuark: obj(93.5, ...ywt3.rQ, -1/3, "s", 0x33ff33, 40),
+				topQuark: obj(172260, ...ywt3.pQ, 2/3, "t", 0x333333, 0.1),
+				bottomQuark: obj(4183, ...ywt3.rQ, -1/3, "b", 0x444444, 0.1),
+				muon: obj(105.65838, ...ywt3.cL, -1, "μ", 0x000099, 10),
+				tau: obj(1776.82, ...ywt3.cL, -1, "τ", 0x000055, 1),
+				wBoson: obj(80377, [1, 1], [0, 0], 1, "W", 0xff7777, 0.2),
+				zBoson: obj(91187.6, [0, 0], [0, 0], 0, "Z", 0x00dddd, 0.2),
+				photon: obj(0, [0, 0], [0, 0], 0, "γ", 0xffffff, 1e3),
+				higgsBoson: obj(125110, [-0.5, -0.5], [1, 1], 0, "H", 0xeeee00, 0.1),
+				electronNeutrino: obj(1e-7, ...ywt3.nu, 0, "ν", 0xff0000, 5e3), //decay to prevent clutter
+				muonNeutrino: obj(3e-7, ...ywt3.nu, 0, "ν", 0x00ff00, 5e3),
+				tauNeutrino: obj(5e-7, ...ywt3.nu, 0, "ν", 0x000099, 5e3),
+				gluon: obj(0, [0,0], [0,0], 0, "g", 0xffffff, 1e3)
+			};
+
+			for(var particle in properties) {
+				let props = properties[particle];
+				if(["higgsBoson", "gluon", "photon", "zBoson"].includes(particle)) continue;
+				properties["anti-"+particle] = obj(props.mass, props.weakIsos.map((x) => -x).toReversed(), props.weakHypers.map((x) => -x), -props.charge, props.symbol+"\u0305", 0xffffff - props.color, props.decayTime)
+			};
+
+			let decayProducts = {
+				charmQuark: [
+					[0.8, "strangeQuark", "wBoson"], 
+					[0.2, "downQuark", "wBoson"]
+				],
+				"anti-charmQuark": [
+					[0.8, "anti-strangeQuark", "anti-wBoson"], 
+					[0.2, "anti-downQuark", "anti-wBoson"]
+				],
+				strangeQuark: [
+					[1, "upQuark", "anti-wBoson"]
+				],
+				"anti-strangeQuark": [
+					[1, "anti-upQuark", "wBoson"]
+				],
+				topQuark: [
+					[0.7, "bottomQuark", "wBoson"], 
+					[0.27, "strangeQuark", "wBoson"], 
+					[0.03, "downQuark", "wBoson"]
+				],
+				"anti-topQuark": [
+					[0.7, "anti-bottomQuark", "anti-wBoson"],
+					[0.27, "anti-strangeQuark", "anti-wBoson"],
+					[0.03, "anti-downQuark", "anti-wBoson"]
+				],
+				bottomQuark: [
+					[0.8, "charmQuark", "anti-wBoson"],
+					[0.2, "upQuark", "anti-wBoson"]
+				],
+				"anti-bottomQuark": [
+					[0.8, "anti-charmQuark", "wBoson"],
+					[0.2, "anti-upQuark", "wBoson"]
+				],
+				higgsBoson: [
+					[0.57, "bottomQuark", "anti-bottomQuark"],
+					[0.21, "wBoson", "anti-wBoson"],
+					[0.06, "tau", "anti-tau"],
+					[0.03, "charmQuark", "anti-charmQuark"],
+					[0.03, "zBoson", "zBoson"],
+					[0.002, "photon", "photon"],
+					[0.003, "electron", "anti-electron", "photon"],
+					[0.001, "muon", "anti-muon", "photon"],
+					[0.001, "tau", "anti-tau", "photon"],
+					[0.001, "muon", "anti-muon"],
+					[0.002, "zBoson", "photon"],
+					[0.09, "gluon", "gluon"]
+				],
+				wBoson: [
+					[0.3065, "anti-electron", "electronNeutrino"],
+					[0.1672, "anti-muon", "muonNeutrino"],
+					[0.0811, "anti-tau", "tauNeutrino"],
+					[0.4151, "upQuark", "anti-downQuark"],
+					[0.03, "charmQuark", "anti-strangeQuark"],
+					[1e-4, "topQuark", "anti-bottomQuark"]
+				],
+				"anti-wBoson": [
+					[0.3065, "electron", "anti-electronNeutrino"],
+					[0.1672, "muon", "anti-muonNeutrino"],
+					[0.0811, "tau", "anti-tauNeutrino"],
+					[0.4151, "anti-upQuark", "downQuark"],
+					[0.03, "anti-charmQuark", "strangeQuark"],
+					[1e-4, "anti-topQuark", "bottomQuark"]
+				],
+				zBoson: [
+					[0.034, "electron", "anti-electron"],
+					[0.034, "muon", "anti-muon"],
+					[0.034, "tau", "anti-tau"],
+					[0.116, "upQuark", "anti-upQuark"],
+					[0.156, "downQuark", "anti-downQuark"],
+					[0.156, "strangeQuark", "anti-strangeQuark"],
+					[0.116, "charmQuark", "anti-charmQuark"],
+					[0.156, "bottomQuark", "anti-bottomQuark"],
+					[0.01, "electronNeutrino", "anti-electronNeutrino"],
+					[0.01, "muonNeutrino", "anti-muonNeutrino"],
+					[0.01, "tauNeutrino", "anti-tauNeutrino"],
+					[0.168, "photon", "photon"]
+				],
+				muon: [
+					[1, "electron", "muonNeutrino", "anti-muonNeutrino"]
+				],
+				"anti-muon": [
+					[1, "anti-electron", "muonNeutrino", "anti-muonNeutrino"]
+				],
+				tau: [
+					[0.7, "tauNeutrino", "electron", "anti-electronNeutrino"],
+					[0.3, "tauNeutrino", "muon", "anti-muonNeutrino"]
+				],
+				"anti-tau": [
+					[0.7, "anti-tauNeutrino", "anti-electron", "electronNeutrino"],
+					[0.3, "anti-tauNeutrino", "anti-muon", "muonNeutrino"]
+				]
+			};
+
+			let weakScenarios = {
+				plus: { //"in": [chance for generation, "out"]
+					"electron": [0.3, "electronNeutrino"],
+					"anti-electronNeutrino": [0.3, "anti-electron"],
+					"muon": [0.1, "muonNeutrino"],
+					"anti-muonNeutrino": [0.1, "anti-muon"],
+					"tau": [0.05, "tauNeutrino"],
+					"anti-tauNeutrino": [0.05, "anti-tau"],
+					"downQuark": [0.01, "upQuark"],
+					"anti-upQuark": [0.01, "anti-downQuark"],
+					"strangeQuark": [0.005, "charmQuark"],
+					"anti-charmQuark": [0.005, "anti-strangeQuark"],
+					"bottomQuark": [5e-4, "topQuark"],
+					"anti-topQuark": [5e-4, "anti-bottomQuark"]
+				},
+				minus: {
+					"anti-electron": [0.3, "anti-electronNeutrino"],
+					"electronNeutrino": [0.3, "electron"],
+					"anti-muon": [0.1, "anti-muonNeutrino"],
+					"muonNeutrino": [0.1, "muon"],
+					"anti-tau": [0.05, "anti-tauNeutrino"],
+					"tauNeutrino": [0.05, "tau"],
+					"upQuark": [0.01, "downQuark"],
+					"anti-downQuark": [0.01, "anti-upQuark"],
+					"charmQuark": [0.005, "strangeQuark"],
+					"anti-strangeQuark": [0.005, "anti-charmQuark"],
+					"topQuark": [5e-4, "bottomQuark"],
+					"anti-bottomQuark": [5e-4, "anti-topQuark"]
+				}
+			};
+
+			let colors = {
+				red: 0xff0000,
+				green: 0x00ff00,
+				blue: 0x0000ff
+			};
+
+			function randomColor(particle) {
+				if(particle.includes("anti-") && particle.includes("Quark")) {
+					return 0xffffff - values(colors)[~~(Math.random()*3)];
+				};
+
+				if(particle.includes("Quark")) {
+					return values(colors)[~~(Math.random()*3)];
+				};
+
+				return 0xffffff;
+			}
+
+			let generationChances = {};
+
+			for(var i in properties) {
+				if(i.includes("Neutrino")) continue; //photons wont turn into antipairs of e neutrinos
+				if(!properties[i].charge) continue;
+				generationChances[i] = 1/(properties[i].mass*genChanceConstant)
+			};
+
+			for(var _particle in properties) {
+				let option = document.createElement("option");
+				option.value = _particle;
+				option.innerText = _particle;
+				addpart.appendChild(option);
+			};
+
+			addpart.onchange = function() {
+				selectedParticle = addpart.value;
+			};
+
+			decay.onchange = function() {
+				doDecays = decay.checked;
+			};
+
+			none.onclick = function() {
+				presentParticles = {};
+			};
+
+			coulomb.onchange = function() {
+				let val = coulomb.value;
+				if(Number.isNaN(Number(val))) return;
+
+				forceConstants.electro = val*1;
+			};
+
+			fpsinput.onchange = function() {
+				changeFPS(fpsinput.value*1);
+			}
+
+			function masslessVelocities() {
+				let vel = {
+					x: Math.random()*2e3*randomSign()
+				};
+				vel.y = randomSign()*Math.sqrt(4e6-vel.x**2);
+
+				return vel;
+			};
+
+			function massedVelocities() {
+				let vel = {
+					x: Math.random()*2e2*randomSign()
+				};
+				vel.y = randomSign()*Math.sqrt(4e4-vel.x**2);
+
+				return vel;
+			}
+
+			function clickToPosition(cvas, event) {
+				let rect = cvas.getBoundingClientRect();
+				let scaleX = cvas.width / rect.width;
+				let scaleY = cvas.height / rect.height;
+
+				return {
+					x: Math.round((event.clientX - rect.left) * scaleX),
+					y: Math.round((event.clientY - rect.top) * scaleY)
+				};
+			};
+
+			partcanvas.onclick = function(e) {
+				let p = clickToPosition(partcanvas, e);
+				let temp = properties[selectedParticle];
+
+				let velocities = massedVelocities();
+				if(temp.mass < 0.1) velocities = masslessVelocities();
+				
+				let particle = addByProps({
+					name: selectedParticle,
+					...temp
+				}, p.x, p.y, velocities.x*randmovement.checked,velocities.y*randmovement.checked);
+			};
+
+			let presentParticles = {
+				//"0.980980932809234electron": [["electron", 0.51099895069, -1, "e", 0x0000ff], 312, 608, 12, -4, false]
+			};
+
+			function addByProps(props, x, y, vx, vy) {
+				if(!(typeof props === "object")) return;
+				let index = Math.random()+props.name;
+				let chiral = Math.round(Math.random());
+				if(props.name.includes("anti-")) chiral = 1*!chiral;
+				let isoToUse = props.weakIsos[chiral];
+				let hypToUse = props.weakHypers[chiral];
+				if(props.name.includes("anti")) hypToUse *= -1;
+				
+				presentParticles[index] = {
+					fund: props,
+					x,
+					y,
+					vx: vx??0,
+					vy: vy??0,
+					ax: 0,
+					ay: 0,
+					isAnti: props.name.includes("anti"),
+					creationTime: Date.now(),
+					colorCharge: randomColor(props.name),
+					chiral,
+					weakIso: isoToUse,
+					weakHyper: hypToUse
+				};
+				
+				return index;
+			};
+
+			function drawCircle(ctx, x, y, radius, fill, stroke, strokeWidth) {
+				ctx.beginPath();
+				ctx.arc(x, y, radius, 0, 2 * Math.PI, false);
+				if(fill) {
+					ctx.fillStyle = fill;
+					ctx.fill();
+				};
+				if(stroke) {
+					ctx.lineWidth = strokeWidth;
+					ctx.strokeStyle = stroke;
+					ctx.stroke();
+				};
+			};
+
+			function drawParticle(color, symbol, x, y) {
+				//props = [color, label];
+				drawCircle(context, x, y, 30, "#"+color.toString(16).padStart(6,0), "#000000", 0);
+				context.fillStyle="#000000";
+				context.fillText(symbol, x-7, y+5);
+			};
+
+			function decayChance(elapsedTime, maxDecayTime) {
+				return 1 - elapsedTime/maxDecayTime;
+			};
+
+			function randomPair() {
+   				let guess = Object.keys(properties)[Math.floor(Math.random()*Object.keys(properties).length)];
+
+    			while(!properties[guess].charge) {
+        			guess = Object.keys(properties)[Math.floor(Math.random()*Object.keys(properties).length)];
+    			};
+
+				let antiGuess = {
+					name: (
+						guess.includes("anti-")?
+						guess.replace("anti-", ""):
+						"anti-"+guess
+					),
+					chance: generationChances[guess],
+					...properties[guess]
+				}
+
+    			return {
+					matter: {name: guess, chance: generationChances[guess], ...properties[guess]},
+					antimatter: antiGuess
+				};
+			};
+			
+			function objAdd(...objs) {
+				let nObj = {
+					x: 0,
+					y: 0
+				};
+
+				for(var i of objs) {
+					nObj.x += i.x;
+					nObj.y += i.y;
+				};
+
+				return nObj;
+			};
+
+			function accelFromForce(partOne, partTwo, force) { //A = F / m
+				if(! ["electro", "weak", "strong"].includes(force)) return 0;
+				let goodCharges = [chargeOf(partOne, force), chargeOf(partTwo, force)];
+				let dirForces = forceLaw(goodCharges[0], goodCharges[1], {x:partOne.x, y:partOne.y}, {x:partTwo.x, y:partTwo.y}, force);
+
+				let xAttraction = Math.sign(dirForces.x) === -1?-1:1;
+				let yAttraction = Math.sign(dirForces.y) === -1?-1:1;
+				[dirForces.xForce, dirForces.yForce] = [dirForces.xForce, dirForces.yForce].map(Math.abs);
+
+				console.log(dirForces);
+
+				let accels = {
+					x: ((0.5*dirForces.xForce)/partOne.fund.mass)*xAttraction,
+					y: ((0.5*dirForces.yForce)/partOne.fund.mass)*yAttraction
+				};
+
+				console.log(accels);
+
+				return accels;
+			}
+
+			function updateParticle(key) {
+				if(!presentParticles[key]) return;
+
+				let particle = presentParticles[key];
+
+				if(particle.x < -60 || particle.x > 1093 || particle.y < -60 || particle.y > 1093) {
+					delete presentParticles[key];
+				};
+
+				if(particle.fund.decayTime && doDecays) {
+					let _dChance = decayChance((Date.now() - particle.creationTime)/1e4, particle.fund.decayTime);
+
+					if(Math.random() > _dChance) {
+						delete presentParticles[key];
+
+						if(decayProducts[particle.fund.name]) {
+							let newParts = weightedRandom(...decayProducts[particle.fund.name]);
+							for(var h of newParts) {
+								if(typeof h !== "string") continue;
+								let randX = particle.x + Math.random()*70*randomSign();
+								let randY = particle.y + Math.random()*70*randomSign();
+	
+								let randVX = Math.sqrt(Math.random()*9e4);
+								let randVY = Math.sqrt(9e4 - randVX);
+								[randVX, randVY] = [randVX*randomSign(), randVY*randomSign()];
+
+								let _newPart = addByProps({
+									name: h,
+									...properties[h]
+								}, randX, randY, randVX, randVY);
+							};
+						};
+							
+						return;
+					};
+				};
+
+				if(particle.fund.name === "photon") {
+					let chosenParticle = randomPair();
+					if(Math.random() <= chosenParticle.matter.chance) {
+						let xOffset = randomSign()*50+Math.random()*25;
+						let yOffset = randomSign()*50+Math.random()*25;
+						let xVelocity = randomSign()*100+Math.random()*200;
+						let yVelocity = randomSign()*100+Math.random()*200;
+						let matterPart = addByProps({
+							name: chosenParticle.matter.name,
+							...properties[chosenParticle.matter.name]
+						}, particle.x+xOffset, particle.y+yOffset, xVelocity, yVelocity);
+
+						let antiPart = addByProps({
+							name: chosenParticle.antimatter.name,
+							...properties[chosenParticle.antimatter.name]
+						}, particle.x-xOffset, particle.y-yOffset);
+						antiPart.vx = -xVelocity;
+						antiPart.vy = -yVelocity;
+
+						delete presentParticles[key];
+						chosenParticle = undefined;
+						return;
+					};
+					chosenParticle = undefined;
+				};
+
+				for(var i in presentParticles) { //two particle interactions
+					let part = presentParticles[i];
+					if(i === key) continue;
+
+						let x = Math.abs(part.x-particle.x);
+						let y = Math.abs(part.y-particle.y);
+						let z = Math.sqrt(x**2 + y**2);
+						let avPos = {
+							x: particle.x/2 + part.x/2,
+							y: part.y/2 + particle.y/2
+						};
+
+						let avVel = {
+							x: particle.vx/2 + part.vx/2,
+							y: part.vy/2 + particle.vy/2
+						}
+					
+						if( //antimatter
+							z < 12 && 
+							(particle.isAnti !== part.isAnti) &&
+							(particle.fund.mass === part.fund.mass)
+						)
+							
+						{
+
+							let velComponents = {
+								x: randomSign()*Math.random()*2000
+							};
+							velComponents.y = randomSign()*Math.sqrt(4e6 - (velComponents.x**2));
+						
+							delete presentParticles[key];
+							delete presentParticles[i];
+	
+							let phot = addByProps({
+								name: "photon", ...properties.photon
+							}, avPos.x, avPos.y, velComponents.x, velComponents.y);
+						};
+
+						if(
+							(Math.abs(particle.fund.charge) + Math.abs(part.fund.charge) === 1) &&
+							particle.fund.charge && 
+							part.fund.charge &&
+							(Math.sign(particle.fund.charge) === Math.sign(part.fund.charge)) &&
+							z < 12
+						)
+							
+						{
+							let isAnti = Math.sign(particle.fund.charge + part.fund.charge) === -1;
+							let toMake = "wBoson";
+							if(isAnti) toMake = "anti-"+toMake;
+
+							let boson = addByProps({
+								name: toMake, ...properties[toMake]
+							}, avPos.x, avPos.y, avVel.x, avVel.y);
+							boson.vx = avVel.x;
+							boson.vy = avVel.y;
+							delete presentParticles[key];
+							delete presentParticles[i];
+						};
+
+						if(
+							part.fund.name.includes("wBoson") && 
+							z < 20 && 
+							!(particle.fund.name.includes("wBoson"))
+						) 
+						{
+							let isPlus = Math.sign(part.fund.charge) === 1;
+							let search = "plus";
+							if(!isPlus) search = "minus";
+
+							let toMake = weakScenarios[search][particle.fund.name];
+							if(weakScenarios[search][particle.fund.name]) { //TODO: REFINE
+								let createdPart = addByProps({
+									name: toMake[1], ...properties[toMake[1]]
+								}, avPos.x, avPos.y, randomSign()*Math.random()*500, randomSign()*Math.random()*500);
+								delete presentParticles[key];
+								delete presentParticles[i];
+							};
+						}
+
+						let accels = [{x: 0, y: 0}, {x: 0, y: 0}, {x: 0, y: 0}];
+
+						if(i.includes("Neutrino") && key.includes("Neutrino")) {
+							accels[0] = accelFromForce(particle, part, "weak");
+						};
+
+						if(i.includes("Quark") && key.includes("Quark") && z < 100) {
+							accels[1] = accelFromForce(particle, part, "strong");
+							[particle.colorCharge, part.colorCharge] = [part.colorCharge, particle.colorCharge];
+						};
+
+						if(part.fund.charge && particle.fund.charge) {
+							accels[2] = accelFromForce(particle, part, "electro");
+						};
+
+						particle.ax = (accels[0].x + accels[1].x + accels[2].x)/3;
+						particle.ay = (accels[0].y + accels[1].y + accels[2].y)/3;
+
+						if(Math.abs(particle.ax) > 2e3) particle.ax = 0;
+						if(Math.abs(particle.ay) > 2e3) particle.ay = 0;
+				};
+
+				if(
+					(particle.x <= 25 && Math.sign(particle.vx) === -1) || 
+					(particle.x >= 998 && Math.sign(particle.vx) === 1)
+				) 
+					{
+						particle.vx *= -1;
+					};
+				if(
+					(particle.y <= 25 && Math.sign(particle.vy) === -1) || 
+					(particle.y >= 998 && Math.sign(particle.vy) === 1)
+				) 
+					{
+						particle.vy *= -1;
+					};
+
+				if(particle.vx**2 + particle.vy**2 >= 2e3**2) {
+					particle.vx = particle.vx / (1-(particle.vx/2e3));
+					particle.vy = particle.vy / (1-(particle.vy/2e3));
+				}
+
+				if(particle.ax) particle.vx += (Math.sqrt(2e3-particle.vx)/(2e3**0.5)) * particle.ax / fps;
+				if(particle.ay) particle.vy += (Math.sqrt(2e3-particle.vy)/(2e3**0.5)) * particle.ay / fps;
+
+				if(
+					particle.vx && 
+					(
+						particle.x+particle.vx/fps > 25 ||
+						particle.x+particle.vx/fps < 998
+					)
+				) particle.x += particle.vx / fps;
+				
+				if(
+					particle.vy && 
+					(
+						particle.y+particle.vy/fps > 25 ||
+						particle.y+particle.vy/fps < 998
+					)
+				) particle.y += particle.vy / fps;
+
+				let colorToDraw = particle.fund.color;
+				if(particle.colorCharge !== 0xffffff) colorToDraw = particle.colorCharge;
+				
+				drawParticle(colorToDraw, particle.fund.symbol, particle.x, particle.y);
+			};
+
+			let frameTicker = setInterval(()=>{
+				context.fillStyle = "#000000";
+				context.fillRect(0,0,1024,1024);
+				for(var i in presentParticles) {
+					updateParticle(i);
+				}
+			},1e3/fps);
+		</script>
+	</body>
+</html>
